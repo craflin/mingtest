@@ -5,12 +5,14 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
-#include <time.h>
 #endif
 
 #include <list>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
+#include <ctime>
 
 namespace {
 
@@ -18,16 +20,20 @@ struct Test
 {
     const char* name;
     void (*func)();
+    int duration;
+    std::list<std::string> failures;
 };
 
 struct Suite
 {
     const char* suite;
     std::list<Test> tests;
+    int duration;
+    size_t failures;
 };
 
 std::list<Suite>* _suites = 0;
-bool _failed = false;
+Test* _currentTest = 0;
 
 bool match(const std::string& test, const char* filter)
 {
@@ -47,11 +53,37 @@ int time()
 #endif
 }
 
+std::string executableName()
+{
+    // todo: cache result somewhere (thread-safe)
+#ifdef _WIN32
+    char path[MAX_PATH + 1];
+    DWORD len = GetModuleFileNameA(NULL, path, sizeof(path));
+    if (len == sizeof(path))
+        return std::string();
+#else
+    char procfile[22];
+    char path[PATH_MAX + 1] = {0};
+#ifdef __linux__
+    sprintf(procfile, "/proc/%d/exe", getpid());
+#else
+#error not implemented
+#endif
+    if (readlink(procfile, path, sizeof(path)) == -1)
+        return std::string();
+#endif
+    std::string pathStr(path);
+    size_t n = pathStr.find_last_of("\\/");
+    if (n != std::string::npos)
+        return pathStr.substr(n + 1);
+    return pathStr;
+}
+
 }
 
 namespace mingtest {
 
-int run(const char* filter)
+int run(const char* filter, const char* outputFile_)
 {
     struct Print
     {
@@ -64,6 +96,28 @@ int run(const char* filter)
             return n == 1 ? "test case" : "test cases";
         }
     };
+
+    std::string outputFile;
+    if (outputFile_)
+        outputFile = outputFile_;
+    else
+    {
+        char* x = getenv("GTEST_OUTPUT");
+        if(x && strncmp(x, "xml:", 4) == 0 && x[4])
+        {
+            outputFile = x + 4;
+            if(strchr("/\\", outputFile[outputFile.length() - 1]))
+            {
+                std::string fileName = executableName();;
+                size_t n = fileName.rfind('.');
+                if (n != std::string::npos)
+                    fileName = fileName.substr(0, n);
+                fileName += ".xml";
+                outputFile += fileName;
+            }
+        }
+    }
+    std::cout << "outputFile=" << outputFile << std::endl;
 
     std::list<Suite> activeSuites;
     size_t activeTests = 0;
@@ -103,7 +157,7 @@ int run(const char* filter)
         {
             Test& test = *i;
             std::cout << "[ RUN      ] " << suite.suite << "." << test.name << std::endl;
-            _failed = false;
+            _currentTest = &test;
             int start = time();
             if (debugger())
             {
@@ -113,22 +167,24 @@ int run(const char* filter)
                 }
                 catch (...)
                 {
-                    _failed = true;
+                    test.failures.push_back("uncaught exception");
                 }
             }
             else
                 test.func();
-            int duration = time() - start;
-            if (_failed)
+            _currentTest = 0;
+            test.duration = time() - start;
+            if (!test.failures.empty())
             {
-                std::cout << "[  FAILED  ] " << suite.suite << "." << test.name << " (" << duration << " ms)" << std::endl;
+                std::cout << "[  FAILED  ] " << suite.suite << "." << test.name << " (" << test.duration << " ms)" << std::endl;
                 failedTests.push_back(std::string(suite.suite) + "." + test.name);
+                ++suite.failures;
             }
             else
-                std::cout << "[       OK ] " << suite.suite << "." << test.name << " (" << duration << " ms)" << std::endl;
+                std::cout << "[       OK ] " << suite.suite << "." << test.name << " (" << test.duration << " ms)" << std::endl;
         }
-        int duration = time() - start;
-        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suite.suite << " (" << duration << " ms total)" << std::endl << std::endl;
+        suite.duration = time() - start;
+        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suite.suite << " (" << suite.duration << " ms total)" << std::endl << std::endl;
     }
     int duration = time() - start;
 
@@ -139,7 +195,6 @@ int run(const char* filter)
 
     if (!failedTests.empty())
     {
-
         std::cout << "[  FAILED  ] " << failedTests.size() << " " << Print::testUnit(failedTests.size()) << ", listed below:" << std::endl;
         for (std::list<std::string>::iterator i = failedTests.begin(), end = failedTests.end(); i != end; ++i)
             std::cout << "[  FAILED  ] " << *i << std::endl;
@@ -151,6 +206,36 @@ int run(const char* filter)
     }
 
     std::cout << std::endl;
+
+    if(!outputFile.empty())
+    {
+        std::ofstream file;
+        file.open(outputFile.c_str());
+        file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+        char date[64];
+        time_t now = time(0);
+        struct tm* time = localtime(&now);
+        strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
+        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" disabled=\"0\" errors=\"0\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
+        for (std::list<Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
+        {
+            Suite& suite = *i;
+            file << "<testsuite name=\"" << suite.suite << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
+            for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
+            {
+                Test& test = *i;
+                file << "<testcase name=\"" << test.name << "\" status=\"run\" time=\"" << (test.duration / 1000.0) << "\" classname=\"" << suite.suite << "\">" << std::endl;
+                for (std::list<std::string>::iterator i = test.failures.begin(), end = test.failures.end(); i != end; ++i)
+                {
+                    const std::string& failure = *i;
+                    file << "<failure message=\"" << failure << "\" type=\"\"><![CDATA[" << failure << "]]></failure>" << std::endl;
+                }
+                file << "</testcase>" << std::endl;
+            }
+            file << "</testsuites>" << std::endl;
+        }
+        file.close();
+    }
 
     return failedTests.empty() ? 0 : 1;
 }
@@ -178,12 +263,15 @@ void add(const char* suite_, const char* name, void (*func)())
 
 void fail(const char* file, int line, const char* expression)
 {
+    std::stringstream error;
 #ifdef _MSC_VER
-    std::cerr << file << "(" << line << "): error: " << expression << " failed" << std::endl;
+    error << file << "(" << line << "): error: " << expression << " failed";
 #else
-    std::cerr << file << ":" << line << " error: " << expression << " failed" << std::endl;
+    error << file << ":" << line << " error: " << expression << " failed";
 #endif
-    _failed = true;
+    std::cerr << error.str() << std::endl;
+    if (_currentTest)
+        _currentTest->failures.push_back(error.str());
 }
 
 bool debugger()

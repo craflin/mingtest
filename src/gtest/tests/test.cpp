@@ -118,7 +118,7 @@ TEST(EXPECT_ANY_THROW, true)
 TEST(EXPECT_ANY_THROW, false)
 {
     int a = 42;
-    EXPECT_ANY_THROW(a = 43, int);
+    EXPECT_ANY_THROW(a = 43);
 }
 
 TEST(FAIL, fail)
@@ -128,57 +128,57 @@ TEST(FAIL, fail)
 
 namespace mingtest {
 
-int run(const char* filter);
+int run(const char* filter, const char* outputFile);
 
 }
 
 int main(int argc, const char* argv[])
 {
-    if (!(mingtest::run("EXPECT_TRUE.true") == 0))
+    if (!(mingtest::run("EXPECT_TRUE.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_TRUE.false") != 0))
+    if (!(mingtest::run("EXPECT_TRUE.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_FALSE.true") == 0))
+    if (!(mingtest::run("EXPECT_FALSE.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_FALSE.false") != 0))
+    if (!(mingtest::run("EXPECT_FALSE.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_EQ.true") == 0))
+    if (!(mingtest::run("EXPECT_EQ.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_EQ.false") != 0))
+    if (!(mingtest::run("EXPECT_EQ.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NE.true") == 0))
+    if (!(mingtest::run("EXPECT_NE.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NE.false") != 0))
+    if (!(mingtest::run("EXPECT_NE.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GE.true") == 0))
+    if (!(mingtest::run("EXPECT_GE.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GE.false") != 0))
+    if (!(mingtest::run("EXPECT_GE.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GT.true") == 0))
+    if (!(mingtest::run("EXPECT_GT.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GT.false") != 0))
+    if (!(mingtest::run("EXPECT_GT.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LE.true") == 0))
+    if (!(mingtest::run("EXPECT_LE.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LE.false") != 0))
+    if (!(mingtest::run("EXPECT_LE.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LT.true") == 0))
+    if (!(mingtest::run("EXPECT_LT.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LT.false") != 0))
+    if (!(mingtest::run("EXPECT_LT.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_THROW.true") == 0))
+    if (!(mingtest::run("EXPECT_THROW.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_THROW.false") != 0))
+    if (!(mingtest::run("EXPECT_THROW.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NO_THROW.true") == 0))
+    if (!(mingtest::run("EXPECT_NO_THROW.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NO_THROW.false") != 0))
+    if (!(mingtest::run("EXPECT_NO_THROW.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_ANY_THROW.true") == 0))
+    if (!(mingtest::run("EXPECT_ANY_THROW.true", 0) == 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_ANY_THROW.false") != 0))
+    if (!(mingtest::run("EXPECT_ANY_THROW.false", 0) != 0))
         return EXIT_FAILURE;
-    if (!(mingtest::run("FAIL.fail") != 0))
+    if (!(mingtest::run("FAIL.fail", 0) != 0))
         return EXIT_FAILURE;
     return EXIT_SUCCESS;
 }
