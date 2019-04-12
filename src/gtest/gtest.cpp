@@ -35,11 +35,34 @@ struct Suite
 std::list<Suite>* _suites = 0;
 Test* _currentTest = 0;
 
-bool match(const std::string& test, const char* filter)
+bool match(const char* pat, const char* str)
 {
-    if (test == filter)
-        return true;
-    return false;
+    const char* s, * p;
+    bool star = false;
+loopStart:
+    for (s = str, p = pat; *s; ++s, ++p)
+    {
+        switch (*p)
+        {
+        case '?':
+            break;
+        case '*':
+            star = true;
+            str = s, pat = p;
+            do { ++pat; } while (*pat == '*');
+            if (!*pat) return true;
+            goto loopStart;
+        default:
+            if (*s != *p) goto starCheck;
+            break;
+        }
+    }
+    while (*p == '*') ++p;
+    return !*p;
+starCheck:
+    if (!star) return false;
+    str++;
+    goto loopStart;
 }
 
 int time()
@@ -83,6 +106,21 @@ std::string executableName()
 
 namespace mingtest {
 
+int listTests()
+{
+    if (_suites)
+        for (std::list<Suite>::iterator i = _suites->begin(), end = _suites->end(); i != end; ++i)
+        {
+            Suite& suite = *i;
+            for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
+            {
+                Test& test = *i;
+                printf("%s.%s\n", suite.suite, test.name);
+            }
+        }
+    return EXIT_SUCCESS;
+}
+
 int run(const char* filter, const char* outputFile_)
 {
     struct Print
@@ -117,7 +155,6 @@ int run(const char* filter, const char* outputFile_)
             }
         }
     }
-    std::cout << "outputFile=" << outputFile << std::endl;
 
     std::list<Suite> activeSuites;
     size_t activeTests = 0;
@@ -129,7 +166,7 @@ int run(const char* filter, const char* outputFile_)
             for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
                 Test& test = *i;
-                if (!filter || match(std::string(suite.suite) + "." + test.name, filter))
+                if (!filter || match(filter, (std::string(suite.suite) + "." + test.name).c_str()))
                 {
                     if (!activeSuite)
                     {
@@ -151,6 +188,7 @@ int run(const char* filter, const char* outputFile_)
     for (std::list<Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
     {
         Suite& suite = *i;
+        suite.failures = 0;
         std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suite.suite << std::endl;
         int start = time();
         for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
