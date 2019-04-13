@@ -5,6 +5,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 
 #include <list>
@@ -14,6 +16,8 @@
 #include <sstream>
 #include <string>
 #include <ctime>
+#include <cstring>
+#include <linux/limits.h>
 
 namespace {
 

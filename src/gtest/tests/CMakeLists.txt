@@ -3,8 +3,6 @@ if(DISABLE_TESTS)
     return()
 endif()
 
-enable_testing()
-
 set(sources
     test.cpp
 )

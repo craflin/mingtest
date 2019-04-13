@@ -2,9 +2,9 @@
 #pragma once
 
 #define TEST(suite, name) \
-    void test_##suite##_##name##(); \
-    struct Test_##suite##_##name## { Test_##suite##_##name##() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name##}; mingtest::add(test);} } _test_##suite##_##name##; \
-    void test_##suite##_##name##()
+    void test_##suite##_##name(); \
+    struct Test_##suite##_##name { Test_##suite##_##name() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name}; mingtest::add(test);} } _test_##suite##_##name; \
+    void test_##suite##_##name()
 
 #define EXPECT_TRUE(e) \
     do { if(!(e)) mingtest::fail(__FILE__, __LINE__, "EXPECT_TRUE(" #e ")"); } while (false)
