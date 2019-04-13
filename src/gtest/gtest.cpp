@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <linux/limits.h>
 #include <mcheck.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 
 #include <list>
@@ -116,6 +118,31 @@ std::string testCaseUnit(size_t n)
     return n == 1 ? "test case" : "test cases";
 }
 
+
+bool isDebuggerPresent()
+{
+#ifdef _WIN32
+    return IsDebuggerPresent() != FALSE;
+#else
+    char buf[2000];
+    int fd = open("/proc/self/status", O_RDONLY);
+    if (fd == -1)
+        return false;
+    ssize_t n = read(fd, buf, sizeof(buf) - 1);
+    if (n <= 0)
+        return false;
+    buf[n] = '\0';
+    close(fd);
+    const char* tracerPid = strstr(buf, "TracerPid:");
+    if (!tracerPid)
+        return false;
+    tracerPid += 10;
+    while(isspace(*tracerPid))
+        ++tracerPid;
+    return isdigit(*tracerPid) && *tracerPid != '0';
+#endif
+}
+
 }
 
 namespace mingtest {
@@ -141,11 +168,7 @@ int run(const char* filter, const char* outputFile_)
 #endif
 
     // check if there is a debugger attached
-#ifdef _WIN32
-    _debugger = IsDebuggerPresent() != FALSE;
-#else
-    // todo
-#endif
+    _debugger = isDebuggerPresent();
 
     // get test report file name
     std::string outputFile;
@@ -202,6 +225,8 @@ int run(const char* filter, const char* outputFile_)
             _currentTestData = &testData;
             int start = time();
             if (debugger())
+                testData.test->func();
+            else
             {
                 try
                 {
@@ -212,8 +237,6 @@ int run(const char* filter, const char* outputFile_)
                     fail(testData.test->file, testData.test->line, "uncaught exception");
                 }
             }
-            else
-                testData.test->func();
 #if defined(_WIN32) && defined(_DEBUG)
             if (!_CrtCheckMemory())
                 fail(testData.test->file, testData.test->line, "detected memory corruption");

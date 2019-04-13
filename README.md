@@ -9,6 +9,7 @@ Features:
 * No dependency on C++11
 * JUnit test report generation
 * Memory checking based on _CrtSetDbgFlag/mcheck
+* Does not catch unexpected exceptions when launched in a debugger
 
 ## Example
 
