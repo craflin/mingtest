@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <mcheck.h>
 #endif
 
 #include <list>
@@ -117,10 +118,14 @@ int listTests()
 
 int run(const char* filter, const char* outputFile_)
 {
-#if defined(_WIN32) && defined(_DEBUG)
+#ifdef _WIN32
+    #ifdef _DEBUG
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_LEAK_CHECK_DF);
+    #endif
+#else
+    mcheck(NULL);
 #endif
 
     struct Print
@@ -202,6 +207,8 @@ int run(const char* filter, const char* outputFile_)
 #if defined(_WIN32) && defined(_DEBUG)
             if (!_CrtCheckMemory())
                 fail(testData.test->file, testData.test->line, "detected memory corruption");
+#else
+            mcheck_check_all();
 #endif
             _currentTestData = 0;
             testData.duration = time() - start;
