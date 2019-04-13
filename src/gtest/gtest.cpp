@@ -317,13 +317,13 @@ void add(Test& test)
     _tests = &test;
 }
 
-void fail(const char* file, int line, const char* expression)
+void fail(const char* file, int line, const char* message)
 {
     std::stringstream error;
 #ifdef _MSC_VER
-    error << file << "(" << line << "): error: " << expression ;
+    error << file << "(" << line << "): error: " << message ;
 #else
-    error << file << ":" << line << " error: " << expression;
+    error << file << ":" << line << " error: " << message;
 #endif
     std::cerr << error.str() << std::endl;
     if (_currentTestData)

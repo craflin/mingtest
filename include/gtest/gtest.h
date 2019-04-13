@@ -61,7 +61,7 @@ struct Test
 };
 
 void add(Test& test);
-void fail(const char* file, int line, const char* expression);
+void fail(const char* file, int line, const char* message);
 bool debugger();
 
 }
