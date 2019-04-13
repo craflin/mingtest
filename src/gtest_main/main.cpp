@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-static const char* VERSION   = "0.1.0";
 static const char* COPYRIGHT = "Copyright (C) 2019 Colin Graf";
 
 namespace mingtest {
@@ -17,7 +16,7 @@ int listTests();
 
 static void showVersion()
 {
-    printf("mingtest %s, drop in replacement for gtest and gtest_main\n", VERSION);
+    printf("mingtest %s, drop in replacement for gtest and gtest_main\n", PROJECT_VERSION);
     puts(COPYRIGHT);
     puts("This program comes with ABSOLUTELY NO WARRANTY.");
     puts("This is free software, and you are welcome to redistribute it under certain");

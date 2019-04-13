@@ -13,6 +13,10 @@ add_library(gtest_main STATIC
     ${sources}
 )
 
+target_compile_definitions(gtest_main PRIVATE
+    PROJECT_VERSION="${PROJECT_VERSION}"
+)
+
 if(WIN32)
     target_include_directories(gtest_main PRIVATE
         .
