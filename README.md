@@ -26,5 +26,3 @@ TEST(Example, TestName)
 ```
 
 ... and build it as an executable. Link it against `gtest` and `gtest_main`. Then launch the executable to run the test.
-
-Yes, you don't need 73k lines of code for this...

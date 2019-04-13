@@ -38,6 +38,7 @@ struct Suite
 
 mingtest::Test* _tests = 0;
 TestData* _currentTestData = 0;
+bool _debugger = false;
 
 bool match(const char* pat, const char* str)
 {
@@ -105,6 +106,16 @@ std::string executableName()
     return pathStr;
 }
 
+std::string testUnit(size_t n)
+{
+    return n == 1 ? "test" : "tests";
+}
+
+std::string testCaseUnit(size_t n)
+{
+    return n == 1 ? "test case" : "test cases";
+}
+
 }
 
 namespace mingtest {
@@ -118,6 +129,7 @@ int listTests()
 
 int run(const char* filter, const char* outputFile_)
 {
+    // enable memory checks
 #ifdef _WIN32
     #ifdef _DEBUG
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
@@ -128,18 +140,14 @@ int run(const char* filter, const char* outputFile_)
     mcheck(NULL);
 #endif
 
-    struct Print
-    {
-        static std::string testUnit(size_t n)
-        {
-            return n == 1 ? "test" : "tests";
-        }
-        static std::string testCaseUnit(size_t n)
-        {
-            return n == 1 ? "test case" : "test cases";
-        }
-    };
+    // check if there is a debugger attached
+#ifdef _WIN32
+    _debugger = IsDebuggerPresent() != FALSE;
+#else
+    // todo
+#endif
 
+    // get test report file name
     std::string outputFile;
     if (outputFile_)
         outputFile = outputFile_;
@@ -161,6 +169,7 @@ int run(const char* filter, const char* outputFile_)
         }
     }
 
+    // find tests to run
     std::map<std::string, Suite> activeSuites;
     size_t activeTests = 0;
     for (Test* test = _tests; test; test = test->next)
@@ -173,7 +182,8 @@ int run(const char* filter, const char* outputFile_)
         }
     }
 
-    std::cout << "[==========] Running " << activeTests << " " << Print::testUnit(activeTests) << " from " << activeSuites.size() << " " << Print::testCaseUnit(activeSuites.size()) << "." << std::endl;
+    // run tests
+    std::cout << "[==========] Running " << activeTests << " " << testUnit(activeTests) << " from " << activeSuites.size() << " " << testCaseUnit(activeSuites.size()) << "." << std::endl;
     std::cout << "[----------] Global test environment set-up." << std::endl;
 
     std::list<std::string> failedTests;
@@ -183,7 +193,7 @@ int run(const char* filter, const char* outputFile_)
         const std::string& suiteName = i->first;
         Suite& suite = i->second;
         suite.failures = 0;
-        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suiteName << std::endl;
+        std::cout << "[----------] " << suite.tests.size() << " " << testUnit(suite.tests.size()) << " from " << suiteName << std::endl;
         int start = time();
         for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
         {
@@ -222,18 +232,18 @@ int run(const char* filter, const char* outputFile_)
                 std::cout << "[       OK ] " << suiteName << "." << testData.test->name << " (" << testData.duration << " ms)" << std::endl;
         }
         suite.duration = time() - start;
-        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suiteName << " (" << suite.duration << " ms total)" << std::endl << std::endl;
+        std::cout << "[----------] " << suite.tests.size() << " " << testUnit(suite.tests.size()) << " from " << suiteName << " (" << suite.duration << " ms total)" << std::endl << std::endl;
     }
     int duration = time() - start;
 
     std::cout << "[----------] Global test environment tear-down" << std::endl;
-    std::cout << "[==========] " << activeTests << " " << Print::testUnit(activeTests) << " from " << activeSuites.size() << " " << Print::testCaseUnit(activeSuites.size()) << " ran. (" << duration << " ms total)" << std::endl;
+    std::cout << "[==========] " << activeTests << " " << testUnit(activeTests) << " from " << activeSuites.size() << " " << testCaseUnit(activeSuites.size()) << " ran. (" << duration << " ms total)" << std::endl;
 
-    std::cout << "[  PASSED  ] " << (activeTests - failedTests.size()) << " " << Print::testUnit(activeTests - failedTests.size()) << "." << std::endl;
+    std::cout << "[  PASSED  ] " << (activeTests - failedTests.size()) << " " << testUnit(activeTests - failedTests.size()) << "." << std::endl;
 
     if (!failedTests.empty())
     {
-        std::cout << "[  FAILED  ] " << failedTests.size() << " " << Print::testUnit(failedTests.size()) << ", listed below:" << std::endl;
+        std::cout << "[  FAILED  ] " << failedTests.size() << " " << testUnit(failedTests.size()) << ", listed below:" << std::endl;
         for (std::list<std::string>::iterator i = failedTests.begin(), end = failedTests.end(); i != end; ++i)
             std::cout << "[  FAILED  ] " << *i << std::endl;
 
@@ -243,6 +253,7 @@ int run(const char* filter, const char* outputFile_)
             std::cout << std::endl << failedTests.size() << " FAILED TESTS" << std::endl;
     }
 
+    // generate test report
     if(!outputFile.empty())
     {
         std::ofstream file;
@@ -298,7 +309,7 @@ void fail(const char* file, int line, const char* expression)
 
 bool debugger()
 {
-    return false;
+    return _debugger;
 }
 
 }
