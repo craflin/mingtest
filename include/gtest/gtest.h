@@ -3,7 +3,7 @@
 
 #define TEST(suite, name) \
     void test_##suite##_##name##(); \
-    struct Test_##suite##_##name## { Test_##suite##_##name##() {mingtest::add(#suite, #name, &test_##suite## _##name##);} } _test_##suite##_##name##; \
+    struct Test_##suite##_##name## { Test_##suite##_##name##() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name##}; mingtest::add(test);} } _test_##suite##_##name##; \
     void test_##suite##_##name##()
 
 #define EXPECT_TRUE(e) \
@@ -50,7 +50,15 @@
 
 namespace mingtest {
 
-void add(const char* suite, const char* name, void (*func)());
+struct Test
+{
+    const char* suite;
+    const char* name;
+    void (*func)();
+    Test* next;
+};
+
+void add(Test& test);
 void fail(const char* file, int line, const char* expression);
 bool debugger();
 

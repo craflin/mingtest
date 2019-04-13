@@ -8,6 +8,7 @@
 #endif
 
 #include <list>
+#include <map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -16,24 +17,22 @@
 
 namespace {
 
-struct Test
+struct TestData
 {
-    const char* name;
-    void (*func)();
+    mingtest::Test* test;
     int duration;
     std::list<std::string> failures;
 };
 
 struct Suite
 {
-    const char* suite;
-    std::list<Test> tests;
+    std::list<TestData> tests;
     int duration;
     size_t failures;
 };
 
-std::list<Suite>* _suites = 0;
-Test* _currentTest = 0;
+mingtest::Test* _tests = 0;
+TestData* _currentTestData = 0;
 
 bool match(const char* pat, const char* str)
 {
@@ -78,7 +77,6 @@ int time()
 
 std::string executableName()
 {
-    // todo: cache result somewhere (thread-safe)
 #ifdef _WIN32
     char path[MAX_PATH + 1];
     DWORD len = GetModuleFileNameA(NULL, path, sizeof(path));
@@ -108,16 +106,8 @@ namespace mingtest {
 
 int listTests()
 {
-    if (_suites)
-        for (std::list<Suite>::iterator i = _suites->begin(), end = _suites->end(); i != end; ++i)
-        {
-            Suite& suite = *i;
-            for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
-            {
-                Test& test = *i;
-                printf("%s.%s\n", suite.suite, test.name);
-            }
-        }
+    for (Test* test = _tests; test; test = test->next)
+        printf("%s.%s\n", test->suite, test->name);
     return EXIT_SUCCESS;
 }
 
@@ -140,10 +130,10 @@ int run(const char* filter, const char* outputFile_)
         outputFile = outputFile_;
     else
     {
-        char* x = getenv("GTEST_OUTPUT");
-        if(x && strncmp(x, "xml:", 4) == 0 && x[4])
+        char* gunit_output = getenv("GTEST_OUTPUT");
+        if(gunit_output && strncmp(gunit_output, "xml:", 4) == 0 && gunit_output[4])
         {
-            outputFile = x + 4;
+            outputFile = gunit_output + 4;
             if(strchr("/\\", outputFile[outputFile.length() - 1]))
             {
                 std::string fileName = executableName();;
@@ -156,73 +146,62 @@ int run(const char* filter, const char* outputFile_)
         }
     }
 
-    std::list<Suite> activeSuites;
+    std::map<std::string, Suite> activeSuites;
     size_t activeTests = 0;
-    if (_suites)
-        for (std::list<Suite>::iterator i = _suites->begin(), end = _suites->end(); i != end; ++i)
+    for (Test* test = _tests; test; test = test->next)
+    {
+        if (!filter || match(filter, (std::string(test->suite) + "." + test->name).c_str()))
         {
-            Suite& suite = *i;
-            Suite* activeSuite = 0;
-            for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
-            {
-                Test& test = *i;
-                if (!filter || match(filter, (std::string(suite.suite) + "." + test.name).c_str()))
-                {
-                    if (!activeSuite)
-                    {
-                        activeSuites.push_back(Suite());
-                        activeSuite = &activeSuites.back();
-                        activeSuite->suite = suite.suite;
-                    }
-                    activeSuite->tests.push_back(test);
-                    ++activeTests;
-                }
-            }
+            TestData testData = {test};
+            activeSuites[test->suite].tests.push_back(testData);
+            ++activeTests;
         }
+    }
 
     std::cout << "[==========] Running " << activeTests << " " << Print::testUnit(activeTests) << " from " << activeSuites.size() << " " << Print::testCaseUnit(activeSuites.size()) << "." << std::endl;
     std::cout << "[----------] Global test environment set-up." << std::endl;
 
     std::list<std::string> failedTests;
     int start = time();
-    for (std::list<Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
+    for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
     {
-        Suite& suite = *i;
+        const std::string& suiteName = i->first;
+        Suite& suite = i->second;
         suite.failures = 0;
-        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suite.suite << std::endl;
+        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suiteName << std::endl;
         int start = time();
-        for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
+        for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
         {
-            Test& test = *i;
-            std::cout << "[ RUN      ] " << suite.suite << "." << test.name << std::endl;
-            _currentTest = &test;
+            TestData& testData = *i;
+            std::cout << "[ RUN      ] " << suiteName << "." << testData.test->name << std::endl;
+            _currentTestData = &testData;
             int start = time();
             if (debugger())
             {
                 try
                 {
-                    test.func();
+                    testData.test->func();
                 }
                 catch (...)
                 {
-                    test.failures.push_back("uncaught exception");
+                    testData.failures.push_back("uncaught exception");
                 }
             }
             else
-                test.func();
-            _currentTest = 0;
-            test.duration = time() - start;
-            if (!test.failures.empty())
+                testData.test->func();
+            _currentTestData = 0;
+            testData.duration = time() - start;
+            if (!testData.failures.empty())
             {
-                std::cout << "[  FAILED  ] " << suite.suite << "." << test.name << " (" << test.duration << " ms)" << std::endl;
-                failedTests.push_back(std::string(suite.suite) + "." + test.name);
+                std::cout << "[  FAILED  ] " << suiteName << "." << testData.test->name << " (" << testData.duration << " ms)" << std::endl;
+                failedTests.push_back(suiteName + "." + testData.test->name);
                 ++suite.failures;
             }
             else
-                std::cout << "[       OK ] " << suite.suite << "." << test.name << " (" << test.duration << " ms)" << std::endl;
+                std::cout << "[       OK ] " << suiteName << "." << testData.test->name << " (" << testData.duration << " ms)" << std::endl;
         }
         suite.duration = time() - start;
-        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suite.suite << " (" << suite.duration << " ms total)" << std::endl << std::endl;
+        std::cout << "[----------] " << suite.tests.size() << " " << Print::testUnit(suite.tests.size()) << " from " << suiteName << " (" << suite.duration << " ms total)" << std::endl << std::endl;
     }
     int duration = time() - start;
 
@@ -243,7 +222,7 @@ int run(const char* filter, const char* outputFile_)
             std::cout << std::endl << failedTests.size() << " FAILED TESTS" << std::endl;
     }
 
-    std::cout << std::endl;
+    //std::cout << std::endl;
 
     if(!outputFile.empty())
     {
@@ -255,15 +234,16 @@ int run(const char* filter, const char* outputFile_)
         struct tm* time = localtime(&now);
         strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
         file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" disabled=\"0\" errors=\"0\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
-        for (std::list<Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
+        for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
         {
-            Suite& suite = *i;
-            file << "<testsuite name=\"" << suite.suite << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
-            for (std::list<Test>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
+            const std::string& suiteName = i->first;
+            Suite& suite = i->second;
+            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
+            for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
-                Test& test = *i;
-                file << "<testcase name=\"" << test.name << "\" status=\"run\" time=\"" << (test.duration / 1000.0) << "\" classname=\"" << suite.suite << "\">" << std::endl;
-                for (std::list<std::string>::iterator i = test.failures.begin(), end = test.failures.end(); i != end; ++i)
+                TestData& testData = *i;
+                file << "<testcase name=\"" << testData.test->name << "\" status=\"run\" time=\"" << (testData.duration / 1000.0) << "\" classname=\"" << suiteName << "\">" << std::endl;
+                for (std::list<std::string>::iterator i = testData.failures.begin(), end = testData.failures.end(); i != end; ++i)
                 {
                     const std::string& failure = *i;
                     file << "<failure message=\"" << failure << "\" type=\"\"><![CDATA[" << failure << "]]></failure>" << std::endl;
@@ -278,25 +258,10 @@ int run(const char* filter, const char* outputFile_)
     return failedTests.empty() ? 0 : 1;
 }
 
-void add(const char* suite_, const char* name, void (*func)())
+void add(Test& test)
 {
-    static std::list<Suite> suites;
-    Suite* suite = 0;
-    for (std::list<Suite>::iterator i = suites.begin(), end = suites.end(); i != end; ++i)
-        if (strcmp(i->suite, suite_) == 0)
-        {
-            suite = &*i;
-            break;
-        }
-    if (!suite)
-    {
-        suites.push_back(Suite());
-        suite = &suites.back();
-        suite->suite = suite_;
-    }
-    Test test = {name, func};
-    suite->tests.push_back(test);
-    _suites = &suites;
+    test.next = _tests;
+    _tests = &test;
 }
 
 void fail(const char* file, int line, const char* expression)
@@ -308,8 +273,8 @@ void fail(const char* file, int line, const char* expression)
     error << file << ":" << line << " error: " << expression << " failed";
 #endif
     std::cerr << error.str() << std::endl;
-    if (_currentTest)
-        _currentTest->failures.push_back(error.str());
+    if (_currentTestData)
+        _currentTestData->failures.push_back(error.str());
 }
 
 bool debugger()
