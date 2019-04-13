@@ -7,6 +7,7 @@
 #else
 #include <sys/types.h>
 #include <unistd.h>
+#include <linux/limits.h>
 #endif
 
 #include <list>
@@ -17,7 +18,6 @@
 #include <string>
 #include <ctime>
 #include <cstring>
-#include <linux/limits.h>
 
 namespace {
 
@@ -117,6 +117,12 @@ int listTests()
 
 int run(const char* filter, const char* outputFile_)
 {
+#if defined(_WIN32) && defined(_DEBUG)
+    _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+    _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
     struct Print
     {
         static std::string testUnit(size_t n)
@@ -188,11 +194,15 @@ int run(const char* filter, const char* outputFile_)
                 }
                 catch (...)
                 {
-                    testData.failures.push_back("uncaught exception");
+                    fail(testData.test->file, testData.test->line, "uncaught exception");
                 }
             }
             else
                 testData.test->func();
+#if defined(_WIN32) && defined(_DEBUG)
+            if (!_CrtCheckMemory())
+                fail(testData.test->file, testData.test->line, "detected memory corruption");
+#endif
             _currentTestData = 0;
             testData.duration = time() - start;
             if (!testData.failures.empty())
@@ -225,8 +235,6 @@ int run(const char* filter, const char* outputFile_)
         else
             std::cout << std::endl << failedTests.size() << " FAILED TESTS" << std::endl;
     }
-
-    //std::cout << std::endl;
 
     if(!outputFile.empty())
     {
@@ -272,9 +280,9 @@ void fail(const char* file, int line, const char* expression)
 {
     std::stringstream error;
 #ifdef _MSC_VER
-    error << file << "(" << line << "): error: " << expression << " failed";
+    error << file << "(" << line << "): error: " << expression ;
 #else
-    error << file << ":" << line << " error: " << expression << " failed";
+    error << file << ":" << line << " error: " << expression;
 #endif
     std::cerr << error.str() << std::endl;
     if (_currentTestData)
