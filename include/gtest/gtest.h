@@ -45,6 +45,45 @@
 #define EXPECT_ANY_THROW(e) \
     do { try { e; mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ") failed"); } catch(...) { } } while (false)
 
+#define ASSERT_TRUE(e) \
+    do { if(!(e)) mingtest::fail(__FILE__, __LINE__, "ASSERT_TRUE(" #e ") failed"); } while (false)
+
+#define ASSERT_FALSE(e) \
+    do { if(e) mingtest::fail(__FILE__, __LINE__, "ASSERT_FALSE(" #e ") failed"); } while (false)
+
+#define ASSERT_EQ(lh, rh) \
+    do { if(!((lh) == (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_EQ(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_NE(lh, rh) \
+    do { if(!((lh) != (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_NE(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_GE(lh, rh) \
+    do { if(!((lh) >= (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_GE(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_GT(lh, rh) \
+    do { if(!((lh) > (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_GT(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_LE(lh, rh) \
+    do { if(!((lh) <= (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_LE(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_LT(lh, rh) \
+    do { if(!((lh) < (rh))) mingtest::fail(__FILE__, __LINE__, "ASSERT_LT(" #lh ", " #rh ") failed"); } while (false)
+
+#define ASSERT_THROW(e, exception) \
+    do { \
+        if (mingtest::debugger()) { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(exception) { } } \
+        else { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(exception) { } catch(...) { mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ")");} } \
+    } while (false)
+
+#define ASSERT_NO_THROW(e) \
+    do { \
+        if (mingtest::debugger()) { e; } \
+        else { try { e; } catch(...) { mingtest::fail(__FILE__, __LINE__, "ASSERT_NO_THROW(" #e ") failed"); } } \
+    } while (false)
+
+#define ASSERT_ANY_THROW(e) \
+    do { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(...) { } } while (false)
+        
 #define FAIL() \
     do { mingtest::fail(__FILE__, __LINE__, "FAIL() reached"); } while(false)
 
