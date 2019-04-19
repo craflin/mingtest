@@ -21,6 +21,7 @@
 #include <string>
 #include <ctime>
 #include <cstring>
+#include <cstdlib>
 
 namespace {
 
@@ -237,9 +238,11 @@ int run(const char* filter, const char* outputFile_)
                     fail(testData.test->file, testData.test->line, "uncaught exception");
                 }
             }
-#if defined(_WIN32) && defined(_DEBUG)
+#ifdef _WIN32
+#ifdef _DEBUG
             if (!_CrtCheckMemory())
                 fail(testData.test->file, testData.test->line, "detected memory corruption");
+#endif
 #else
             mcheck_check_all();
 #endif
@@ -308,7 +311,7 @@ int run(const char* filter, const char* outputFile_)
         file.close();
     }
 
-    return failedTests.empty() ? 0 : 1;
+    return failedTests.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 void add(Test& test)
