@@ -30,7 +30,7 @@ static void showUsage(const char* executable)
         const char* filename = strpbrk(executable, "/\\");
         if(!filename)
             break;
-        executable = filename;
+        executable = filename + 1;
     }
     showVersion();
     puts("");
