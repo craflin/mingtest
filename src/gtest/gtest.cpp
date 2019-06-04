@@ -76,15 +76,58 @@ starCheck:
 int time()
 {
 #ifdef _WIN32
-  return (int)GetTickCount();
+    return (int)GetTickCount();
 #else
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (int)(ts.tv_sec * 1000) + (int)(ts.tv_nsec / 1000000);
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (int)(ts.tv_sec * 1000) + (int)(ts.tv_nsec / 1000000);
 #endif
 }
 
-std::string executableName()
+std::string basename(const std::string& path)
+{
+    size_t n = path.find_last_of("\\/");
+    if (n != std::string::npos)
+        return path.substr(n + 1);
+    return path;
+}
+
+std::string dirname(const std::string& path)
+{
+    size_t n = path.find_last_of("\\/");
+    if (n != std::string::npos)
+        return path.substr(0, n);
+    return ".";
+}
+
+bool exists(const std::string& path)
+{
+#ifdef _WIN32
+    return GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+#else
+    struct stat buf;
+    return stat(path.c_str(), &buf) == 0;
+#endif
+}
+
+bool mkdir(const std::string& dir)
+{
+    std::string parent = dirname(dir);
+    if(parent != "." && !exists(parent))
+    {
+        if(!mkdir(parent))
+            return false;
+    }
+#ifdef _WIN32
+    if(!CreateDirectory(dir.c_str(), NULL))
+#else
+    if(::mkdir(dir.c_str(), S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) != 0)
+#endif
+        return false;
+    return true;
+}
+
+std::string executablePath()
 {
 #ifdef _WIN32
     char path[MAX_PATH + 1];
@@ -102,11 +145,7 @@ std::string executableName()
     if (readlink(procfile, path, sizeof(path)) == -1)
         return std::string();
 #endif
-    std::string pathStr(path);
-    size_t n = pathStr.find_last_of("\\/");
-    if (n != std::string::npos)
-        return pathStr.substr(n + 1);
-    return pathStr;
+    return path;
 }
 
 std::string testUnit(size_t n)
@@ -118,7 +157,6 @@ std::string testCaseUnit(size_t n)
 {
     return n == 1 ? "test case" : "test cases";
 }
-
 
 bool isDebuggerPresent()
 {
@@ -175,21 +213,21 @@ int run(const char* filter, const char* outputFile_)
     std::string outputFile;
     if (outputFile_)
         outputFile = outputFile_;
-    else
+    else if (char* gunit_output = getenv("GTEST_OUTPUT"))
+        outputFile = gunit_output;
+    if (!outputFile.empty())
     {
-        char* gunit_output = getenv("GTEST_OUTPUT");
-        if(gunit_output && strncmp(gunit_output, "xml:", 4) == 0 && gunit_output[4])
+        if (strncmp(outputFile.c_str(), "xml:", 4) != 0 || outputFile.length() == 4)
+            outputFile.clear();
+        outputFile = outputFile.substr(4);
+        if(strchr("/\\", outputFile[outputFile.length() - 1]))
         {
-            outputFile = gunit_output + 4;
-            if(strchr("/\\", outputFile[outputFile.length() - 1]))
-            {
-                std::string fileName = executableName();;
-                size_t n = fileName.rfind('.');
-                if (n != std::string::npos)
-                    fileName = fileName.substr(0, n);
-                fileName += ".xml";
-                outputFile += fileName;
-            }
+            std::string fileName = basename(executablePath());
+            size_t n = fileName.rfind('.');
+            if (n != std::string::npos)
+                fileName = fileName.substr(0, n);
+            fileName += ".xml";
+            outputFile += fileName;
         }
     }
 
@@ -282,6 +320,7 @@ int run(const char* filter, const char* outputFile_)
     // generate test report
     if(!outputFile.empty())
     {
+        mkdir(dirname(outputFile));
         std::ofstream file;
         file.open(outputFile.c_str());
         file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
@@ -309,6 +348,11 @@ int run(const char* filter, const char* outputFile_)
             file << "</testsuites>" << std::endl;
         }
         file.close();
+        if (file.fail())
+        {
+            fprintf(stderr, "Could not create test report '%s'\n", outputFile.c_str());
+            return EXIT_FAILURE;
+        }
     }
 
     return failedTests.empty() ? EXIT_SUCCESS : EXIT_FAILURE;
