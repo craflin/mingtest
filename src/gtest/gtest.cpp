@@ -345,8 +345,9 @@ int run(const char* filter, const char* outputFile_)
                 }
                 file << "</testcase>" << std::endl;
             }
-            file << "</testsuites>" << std::endl;
+            file << "</testsuite>" << std::endl;
         }
+        file << "</testsuites>" << std::endl;
         file.close();
         if (file.fail())
         {
