@@ -2,6 +2,9 @@
 #include <gtest/gtest.h>
 
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
 
 TEST(EXPECT_TRUE, true)
 {
@@ -126,6 +129,16 @@ TEST(FAIL, fail)
     FAIL();
 }
 
+TEST(TestReport, success)
+{
+}
+
+TEST(TestReport, fail)
+{
+    FAIL();
+}
+
+
 namespace mingtest {
 
 int run(const char* filter, const char* outputFile);
@@ -180,5 +193,53 @@ int main(int argc, const char* argv[])
         return EXIT_FAILURE;
     if (!(mingtest::run("FAIL.fail", 0) != 0))
         return EXIT_FAILURE;
+
+    if (!(mingtest::run("TestReport.*", "xml:testreport.xml") != 0))
+        return EXIT_FAILURE;
+    {
+        {
+            std::ifstream testReportFile("testreport.xml");
+            std::stringstream buffer;
+            buffer << testReportFile.rdbuf();
+            std::string testReport = buffer.str();
+            testReport.erase(std::remove(testReport.begin(), testReport.end(), '\r'), testReport.end());
+            testReport.erase(std::remove(testReport.begin(), testReport.end(), '\n'), testReport.end());
+            struct _ {
+                static void replace(const std::string& search, const std::string& end, const std::string& value, std::string& str)
+                {
+                    for (size_t x = 0;;)
+                    {
+                        size_t a = str.find(search, x);
+                        if (a == std::string::npos)
+                            break;
+                        a += search.length();
+                        size_t b = str.find(end, a);
+                        str.replace(a, b - a, value);
+                        x = a + value.length() + end.length();
+                    }
+                }
+            };
+            _::replace("timestamp=\"", "\"", "<timestamp>", testReport);
+            _::replace("time=\"", "\"", "<time>", testReport);
+            _::replace("message=\"", "\"", "<message>", testReport);
+            _::replace("<![CDATA[", "]]>", "<cdata>", testReport);
+            std::string checkStr = 
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+"<testsuites tests=\"2\" failures=\"1\" disabled=\"0\" errors=\"0\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
+"<testsuite name=\"TestReport\" tests=\"2\" failures=\"1\" disabled=\"0\" errors=\"0\" time=\"<time>\">"
+"<testcase name=\"fail\" status=\"run\" time=\"<time>\" classname=\"TestReport\">"
+"<failure message=\"<message>\" type=\"\">"
+"<![CDATA[<cdata>]]>"
+"</failure>"
+"</testcase>"
+"<testcase name=\"success\" status=\"run\" time=\"<time>\" classname=\"TestReport\"></testcase>"
+"</testsuite>"
+"</testsuites>";
+            if (testReport != checkStr)
+                return EXIT_FAILURE;
+        }
+        std::remove("testreport.xml");
+    }
+
     return EXIT_SUCCESS;
 }
