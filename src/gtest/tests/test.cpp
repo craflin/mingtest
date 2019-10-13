@@ -133,6 +133,11 @@ TEST(TestReport, success)
 {
 }
 
+TEST(TestReport, skip)
+{
+    GTEST_SKIP();
+}
+
 TEST(TestReport, fail)
 {
     FAIL();
@@ -225,12 +230,15 @@ int main(int argc, const char* argv[])
             _::replace("<![CDATA[", "]]>", "<cdata>", testReport);
             std::string checkStr = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-"<testsuites tests=\"2\" failures=\"1\" disabled=\"0\" errors=\"0\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
-"<testsuite name=\"TestReport\" tests=\"2\" failures=\"1\" disabled=\"0\" errors=\"0\" time=\"<time>\">"
+"<testsuites tests=\"3\" failures=\"1\" disabled=\"0\" errors=\"0\" skipped=\"1\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
+"<testsuite name=\"TestReport\" tests=\"3\" failures=\"1\" disabled=\"0\" errors=\"0\" skipped=\"1\" time=\"<time>\">"
 "<testcase name=\"fail\" status=\"run\" time=\"<time>\" classname=\"TestReport\">"
 "<failure message=\"<message>\" type=\"\">"
 "<![CDATA[<cdata>]]>"
 "</failure>"
+"</testcase>"
+"<testcase name=\"skip\" status=\"run\" time=\"<time>\" classname=\"TestReport\">"
+"<skipped/>"
 "</testcase>"
 "<testcase name=\"success\" status=\"run\" time=\"<time>\" classname=\"TestReport\"></testcase>"
 "</testsuite>"

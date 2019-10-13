@@ -87,6 +87,9 @@
 #define FAIL() \
     do { mingtest::fail(__FILE__, __LINE__, "FAIL() reached"); } while(false)
 
+#define GTEST_SKIP() \
+    do { mingtest::skip(); } while(false)
+
 namespace mingtest {
 
 struct Test
@@ -101,6 +104,7 @@ struct Test
 
 void add(Test& test);
 void fail(const char* file, int line, const char* message);
+void skip();
 bool debugger();
 
 }

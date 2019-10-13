@@ -30,6 +30,9 @@ struct TestData
     mingtest::Test* test;
     int duration;
     std::list<std::string> failures;
+    bool skipped;
+
+    TestData(mingtest::Test* test) : test(test), duration(-1), skipped(false) {}
 };
 
 struct Suite
@@ -37,6 +40,9 @@ struct Suite
     std::list<TestData> tests;
     int duration;
     size_t failures;
+    size_t skipped;
+
+    Suite() : duration(-1), failures(0), skipped(0) {}
 };
 
 mingtest::Test* _tests = 0;
@@ -153,6 +159,11 @@ std::string testUnit(size_t n)
     return n == 1 ? "test" : "tests";
 }
 
+std::string testUnitUpper(size_t n)
+{
+    return n == 1 ? "TEST" : "TESTS";
+}
+
 std::string testCaseUnit(size_t n)
 {
     return n == 1 ? "test case" : "test cases";
@@ -238,7 +249,7 @@ int run(const char* filter, const char* outputFile_)
     {
         if (!filter || match(filter, (std::string(test->suite) + "." + test->name).c_str()))
         {
-            TestData testData = {test};
+            TestData testData(test);
             activeSuites[test->suite].tests.push_back(testData);
             ++activeTests;
         }
@@ -249,12 +260,12 @@ int run(const char* filter, const char* outputFile_)
     std::cout << "[----------] Global test environment set-up." << std::endl;
 
     std::list<std::string> failedTests;
+    std::list<std::string> skippedTests;
     int start = time();
     for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
     {
         const std::string& suiteName = i->first;
         Suite& suite = i->second;
-        suite.failures = 0;
         std::cout << "[----------] " << suite.tests.size() << " " << testUnit(suite.tests.size()) << " from " << suiteName << std::endl;
         int start = time();
         for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
@@ -292,6 +303,12 @@ int run(const char* filter, const char* outputFile_)
                 failedTests.push_back(suiteName + "." + testData.test->name);
                 ++suite.failures;
             }
+            else if(testData.skipped)
+            {
+                std::cout << "[  SKIPPED ] " << suiteName << "." << testData.test->name << " (" << testData.duration << " ms)" << std::endl;
+                skippedTests.push_back(suiteName + "." + testData.test->name);
+                ++suite.skipped;
+            }
             else
                 std::cout << "[       OK ] " << suiteName << "." << testData.test->name << " (" << testData.duration << " ms)" << std::endl;
         }
@@ -303,18 +320,15 @@ int run(const char* filter, const char* outputFile_)
     std::cout << "[----------] Global test environment tear-down" << std::endl;
     std::cout << "[==========] " << activeTests << " " << testUnit(activeTests) << " from " << activeSuites.size() << " " << testCaseUnit(activeSuites.size()) << " ran. (" << duration << " ms total)" << std::endl;
 
-    std::cout << "[  PASSED  ] " << (activeTests - failedTests.size()) << " " << testUnit(activeTests - failedTests.size()) << "." << std::endl;
+    size_t passedCount = activeTests - failedTests.size() - skippedTests.size();
+    std::cout << "[  PASSED  ] " << passedCount << " " << testUnit(passedCount) << "." << std::endl;
 
     if (!failedTests.empty())
     {
         std::cout << "[  FAILED  ] " << failedTests.size() << " " << testUnit(failedTests.size()) << ", listed below:" << std::endl;
         for (std::list<std::string>::iterator i = failedTests.begin(), end = failedTests.end(); i != end; ++i)
             std::cout << "[  FAILED  ] " << *i << std::endl;
-
-        if (failedTests.size() == 1)
-            std::cout << std::endl << failedTests.size() << " FAILED TEST" << std::endl;
-        else
-            std::cout << std::endl << failedTests.size() << " FAILED TESTS" << std::endl;
+        std::cout << std::endl << failedTests.size() << " FAILED " << testUnitUpper(failedTests.size()) << std::endl;
     }
 
     // generate test report
@@ -328,12 +342,12 @@ int run(const char* filter, const char* outputFile_)
         time_t now = time(0);
         struct tm* time = localtime(&now);
         strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
-        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" disabled=\"0\" errors=\"0\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
+        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" disabled=\"0\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
         for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
         {
             const std::string& suiteName = i->first;
             Suite& suite = i->second;
-            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
+            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" skipped=\"" << suite.skipped << "\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
             for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
                 TestData& testData = *i;
@@ -343,6 +357,8 @@ int run(const char* filter, const char* outputFile_)
                     const std::string& failure = *i;
                     file << "<failure message=\"" << failure << "\" type=\"\"><![CDATA[" << failure << "]]></failure>" << std::endl;
                 }
+                if (testData.skipped)
+                    file << "<skipped/>" << std::endl;
                 file << "</testcase>" << std::endl;
             }
             file << "</testsuite>" << std::endl;
@@ -376,6 +392,12 @@ void fail(const char* file, int line, const char* message)
     std::cerr << error.str() << std::endl;
     if (_currentTestData)
         _currentTestData->failures.push_back(error.str());
+}
+
+void skip()
+{
+    if (_currentTestData)
+        _currentTestData->skipped = true;
 }
 
 bool debugger()
