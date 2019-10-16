@@ -236,19 +236,16 @@ int main(int argc, const char* argv[])
             _::replace("timestamp=\"", "\"", "<timestamp>", testReport);
             _::replace("time=\"", "\"", "<time>", testReport);
             _::replace("message=\"", "\"", "<message>", testReport);
-            _::replace("<![CDATA[", "]]>", "<cdata>", testReport);
             std::string checkStr = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-"<testsuites tests=\"3\" failures=\"1\" disabled=\"0\" errors=\"0\" skipped=\"1\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
-"<testsuite name=\"TestReport\" tests=\"3\" failures=\"1\" disabled=\"0\" errors=\"0\" skipped=\"1\" time=\"<time>\">"
-"<testcase name=\"success\" status=\"run\" time=\"<time>\" classname=\"TestReport\"></testcase>"
-"<testcase name=\"skip\" status=\"run\" time=\"<time>\" classname=\"TestReport\">"
+"<testsuites tests=\"3\" failures=\"1\" errors=\"0\" skipped=\"1\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
+"<testsuite name=\"TestReport\" tests=\"3\" failures=\"1\" errors=\"0\" skipped=\"1\" time=\"<time>\">"
+"<testcase name=\"success\" time=\"<time>\" classname=\"TestReport\"></testcase>"
+"<testcase name=\"skip\" time=\"<time>\" classname=\"TestReport\">"
 "<skipped/>"
 "</testcase>"
-"<testcase name=\"fail\" status=\"run\" time=\"<time>\" classname=\"TestReport\">"
-"<failure message=\"<message>\" type=\"\">"
-"<![CDATA[<cdata>]]>"
-"</failure>"
+"<testcase name=\"fail\" time=\"<time>\" classname=\"TestReport\">"
+"<failure message=\"<message>\" type=\"\"/>"
 "</testcase>"
 "</testsuite>"
 "</testsuites>";

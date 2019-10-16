@@ -361,20 +361,20 @@ int run(const char* filter, const char* outputFile_)
         time_t now = time(0);
         struct tm* time = localtime(&now);
         strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
-        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" disabled=\"0\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
+        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
         for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
         {
             const std::string& suiteName = i->first;
             Suite& suite = i->second;
-            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" disabled=\"0\" errors=\"0\" skipped=\"" << suite.skipped << "\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
+            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" errors=\"0\" skipped=\"" << suite.skipped << "\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
             for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
                 TestData& testData = *i;
-                file << "<testcase name=\"" << testData.test->name << "\" status=\"run\" time=\"" << (testData.duration / 1000.0) << "\" classname=\"" << suiteName << "\">" << std::endl;
+                file << "<testcase name=\"" << testData.test->name << "\" time=\"" << (testData.duration / 1000.0) << "\" classname=\"" << suiteName << "\">" << std::endl;
                 for (std::list<std::string>::iterator i = testData.failures.begin(), end = testData.failures.end(); i != end; ++i)
                 {
                     const std::string& failure = *i;
-                    file << "<failure message=\"" << failure << "\" type=\"\"><![CDATA[" << failure << "]]></failure>" << std::endl;
+                    file << "<failure message=\"" << failure << "\" type=\"\"/>" << std::endl;
                 }
                 if (testData.skipped)
                     file << "<skipped/>" << std::endl;
