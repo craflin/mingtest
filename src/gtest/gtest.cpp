@@ -46,6 +46,7 @@ struct Suite
 };
 
 mingtest::Test* _tests = 0;
+mingtest::Test* _lastTests = 0;
 TestData* _currentTestData = 0;
 bool _debugger = false;
 
@@ -377,8 +378,11 @@ int run(const char* filter, const char* outputFile_)
 
 void add(Test& test)
 {
-    test.next = _tests;
-    _tests = &test;
+    if (_lastTests)
+        _lastTests->next = &test;
+    else
+        _tests = &test;
+    _lastTests = &test;
 }
 
 void fail(const char* file, int line, const char* message)
