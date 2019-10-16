@@ -85,10 +85,10 @@
     do { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(...) { } } while (false)
         
 #define FAIL() \
-    do { mingtest::fail(__FILE__, __LINE__, "FAIL() reached"); } while(false)
+    do { mingtest::fail(__FILE__, __LINE__, "FAIL() reached"); mingtest::exit(); } while(false)
 
 #define GTEST_SKIP() \
-    do { mingtest::skip(); } while(false)
+    do { mingtest::skip(); mingtest::exit(); } while(false)
 
 namespace mingtest {
 
@@ -104,6 +104,7 @@ struct Test
 
 void add(Test& test);
 void fail(const char* file, int line, const char* message);
+void exit();
 void skip();
 bool debugger();
 

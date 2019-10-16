@@ -124,9 +124,16 @@ TEST(EXPECT_ANY_THROW, false)
     EXPECT_ANY_THROW(a = 43);
 }
 
+TEST(SKIP, skip)
+{
+    GTEST_SKIP();
+    exit(1); // should not be executed
+}
+
 TEST(FAIL, fail)
 {
     FAIL();
+    exit(1); // should not be executed
 }
 
 TEST(TestReport, success)
@@ -195,6 +202,8 @@ int main(int argc, const char* argv[])
     if (!(mingtest::run("EXPECT_ANY_THROW.true", 0) == 0))
         return EXIT_FAILURE;
     if (!(mingtest::run("EXPECT_ANY_THROW.false", 0) != 0))
+        return EXIT_FAILURE;
+    if (!(mingtest::run("SKIP.skip", 0) == 0))
         return EXIT_FAILURE;
     if (!(mingtest::run("FAIL.fail", 0) != 0))
         return EXIT_FAILURE;

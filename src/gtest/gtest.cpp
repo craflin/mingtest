@@ -45,6 +45,8 @@ struct Suite
     Suite() : duration(-1), failures(0), skipped(0) {}
 };
 
+struct ExitException {};
+
 mingtest::Test* _tests = 0;
 mingtest::Test* _lastTests = 0;
 TestData* _currentTestData = 0;
@@ -276,12 +278,28 @@ int run(const char* filter, const char* outputFile_)
             _currentTestData = &testData;
             int start = time();
             if (debugger())
-                testData.test->func();
-            else
             {
                 try
                 {
                     testData.test->func();
+                }
+                catch (ExitException&)
+                {
+                    ;
+                }
+            }
+            else
+            {
+                try
+                {
+                    try
+                    {
+                        testData.test->func();
+                    }
+                    catch (ExitException&)
+                    {
+                        ;
+                    }
                 }
                 catch (...)
                 {
@@ -402,6 +420,11 @@ void skip()
 {
     if (_currentTestData)
         _currentTestData->skipped = true;
+}
+
+void exit()
+{
+    throw ExitException();
 }
 
 bool debugger()
