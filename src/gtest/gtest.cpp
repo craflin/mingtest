@@ -196,6 +196,29 @@ bool isDebuggerPresent()
 #endif
 }
 
+const char* _xmlEscapeChars = "\"'<>&";
+const char* _xmlEscapeTranslation[] = {
+    "&quot;",
+    "&apos;",
+    "&lt;",
+    "&gt;",
+    "&amp;"
+};
+
+std::string xmlEscape(const std::string& value)
+{
+    std::string result = value;
+    for (size_t i = 0, n;;)
+    {
+        n = result.find_first_of(_xmlEscapeChars, i);
+        if (n == std::string::npos)
+            break;
+        result.replace(n, 1, _xmlEscapeTranslation[strchr(_xmlEscapeChars, result[n]) - _xmlEscapeChars]);
+        i = result.find(';', n + 3) + 1;
+    }
+    return result;
+}
+
 }
 
 namespace mingtest {
@@ -361,20 +384,20 @@ int run(const char* filter, const char* outputFile_)
         time_t now = time(0);
         struct tm* time = localtime(&now);
         strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
-        file << "<testsuites tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\" name=\"AllTests\">" << std::endl;
+        file << "<testsuites name=\"AllTests\" tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\">" << std::endl;
         for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
         {
             const std::string& suiteName = i->first;
             Suite& suite = i->second;
-            file << "<testsuite name=\"" << suiteName << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" errors=\"0\" skipped=\"" << suite.skipped << "\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
+            file << "<testsuite name=\"" << xmlEscape(suiteName) << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.failures << "\" errors=\"0\" skipped=\"" << suite.skipped << "\" time=\"" << (suite.duration / 1000.0) << "\">" << std::endl;
             for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
                 TestData& testData = *i;
-                file << "<testcase name=\"" << testData.test->name << "\" time=\"" << (testData.duration / 1000.0) << "\" classname=\"" << suiteName << "\">" << std::endl;
+                file << "<testcase name=\"" << xmlEscape(testData.test->name) << "\" time=\"" << (testData.duration / 1000.0) << "\" classname=\"" << xmlEscape(suiteName) << "\">" << std::endl;
                 for (std::list<std::string>::iterator i = testData.failures.begin(), end = testData.failures.end(); i != end; ++i)
                 {
                     const std::string& failure = *i;
-                    file << "<failure message=\"" << failure << "\" type=\"\"/>" << std::endl;
+                    file << "<failure message=\"" << xmlEscape(failure) << "\" type=\"\"/>" << std::endl;
                 }
                 if (testData.skipped)
                     file << "<skipped/>" << std::endl;
