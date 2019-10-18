@@ -324,6 +324,11 @@ int run(const char* filter, const char* outputFile_)
                         ;
                     }
                 }
+                catch (const std::exception& e)
+                {
+                    std::string message = std::string("uncaught std::exception: ") + e.what();
+                    fail(testData.test->file, testData.test->line, message.c_str());
+                }
                 catch (...)
                 {
                     fail(testData.test->file, testData.test->line, "uncaught exception");
