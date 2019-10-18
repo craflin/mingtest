@@ -238,7 +238,7 @@ int main(int argc, const char* argv[])
             _::replace("message=\"", "\"", "<message>", testReport);
             std::string checkStr = 
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-"<testsuites tests=\"3\" failures=\"1\" errors=\"0\" skipped=\"1\" timestamp=\"<timestamp>\" time=\"<time>\" name=\"AllTests\">"
+"<testsuites name=\"AllTests\" tests=\"3\" failures=\"1\" errors=\"0\" skipped=\"1\" timestamp=\"<timestamp>\" time=\"<time>\">"
 "<testsuite name=\"TestReport\" tests=\"3\" failures=\"1\" errors=\"0\" skipped=\"1\" time=\"<time>\">"
 "<testcase name=\"success\" time=\"<time>\" classname=\"TestReport\"></testcase>"
 "<testcase name=\"skip\" time=\"<time>\" classname=\"TestReport\">"
