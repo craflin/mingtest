@@ -442,6 +442,12 @@ void fail(const char* file, int line, const char* message)
     std::cerr << error.str() << std::endl;
     if (_currentTestData)
         _currentTestData->failures.push_back(error.str());
+    if (_debugger)
+#ifdef _MSC_VER
+        __debugbreak();
+#else
+        __builtin_trap();
+#endif
 }
 
 void skip()

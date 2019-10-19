@@ -8,8 +8,9 @@ Features:
 * Easily integratable in CMake projects
 * No dependency on C++11
 * JUnit test report generation
-* Memory checking based on _CrtSetDbgFlag/mcheck
+* Memory checking based on `_CrtSetDbgFlag`/`mcheck`
 * Does not catch unexpected exceptions when launched in a debugger
+* Breaks at failed assertions when running in a debugger
 
 ## Example
 
@@ -18,12 +19,19 @@ Write C++ code like this:
 ```cpp
 #include <gtest/gtest.h>
 
-TEST(Example, TestName)
+TEST(Example, TestName1)
 {
     int a = 32;
     int b = 32;
     EXPECT_TRUE(a == b);
 }
+
+TEST(Example, TestName2)
+{
+    int a = 32;
+    int b = 32;
+    EXPECT_FALSE(a != b);
+}
 ```
 
-... and build it as an executable. Link it against `gtest` and `gtest_main`. Then launch the executable to run the test.
+... and build it as an executable. Link it against `gtest` and `gtest_main`. Then launch the executable to run the test. You can also use the assertion macros `EXPECT_THROW` and `EXPECT_ANY_THROW`. (And some pointless macros like `EXPECT_EQ`, `EXPECT_NE`, `EXPECT_GE`, `EXPECT_GT`, `EXPECT_LE`, `EXPECT_LT` and `EXPECT_NO_THROW` if you like.)
