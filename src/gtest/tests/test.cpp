@@ -127,13 +127,13 @@ TEST(EXPECT_ANY_THROW, false)
 TEST(SKIP, skip)
 {
     GTEST_SKIP();
-    exit(1); // should not be executed
+    exit(EXIT_FAILURE); // should not be executed
 }
 
 TEST(FAIL, fail)
 {
     FAIL();
-    exit(1); // should not be executed
+    exit(EXIT_FAILURE); // should not be executed
 }
 
 TEST(TestReport, success)
