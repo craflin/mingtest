@@ -33,7 +33,7 @@
 #define EXPECT_THROW(e, exception) \
     do { \
         if (mingtest::debugger()) { try { e; mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ") failed"); } catch(exception) { } } \
-        else { try { e; mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ") failed"); } catch(exception) { } catch(...) { mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ")");} } \
+        else { try { e; mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ") failed"); } catch(exception) { } catch(...) { mingtest::fail(__FILE__, __LINE__, "EXPECT_THROW(" #e ") failed");} } \
     } while (false)
 
 #define EXPECT_NO_THROW(e) \
@@ -72,7 +72,7 @@
 #define ASSERT_THROW(e, exception) \
     do { \
         if (mingtest::debugger()) { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(exception) { } } \
-        else { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(exception) { } catch(...) { mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ")");} } \
+        else { try { e; mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed"); } catch(exception) { } catch(...) { mingtest::fail(__FILE__, __LINE__, "ASSERT_THROW(" #e ") failed");} } \
     } while (false)
 
 #define ASSERT_NO_THROW(e) \
