@@ -274,105 +274,60 @@ int run(const char* filter, const char* outputFile);
 
 }
 
+#define ASSERT(e) do { if (!(e)) ::exit(EXIT_FAILURE); } while (false)
+
 int main()
 {
-    if (!(mingtest::run("EXPECT_TRUE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_TRUE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_FALSE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_FALSE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_EQ.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_EQ.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GT.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_GT.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LT.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_LT.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NO_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_NO_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_ANY_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("EXPECT_ANY_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
+    ASSERT(mingtest::run("EXPECT_TRUE.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_TRUE.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_FALSE.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_FALSE.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_EQ.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_EQ.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_NE.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_NE.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_GE.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_GE.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_GT.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_GT.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_LE.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_LE.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_LT.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_LT.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_THROW.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_NO_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_NO_THROW.false", 0) != 0);
+    ASSERT(mingtest::run("EXPECT_ANY_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("EXPECT_ANY_THROW.false", 0) != 0);
 
-    if (!(mingtest::run("ASSERT_TRUE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_TRUE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_FALSE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_FALSE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_EQ.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_EQ.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_NE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_NE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_GE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_GE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_GT.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_GT.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_LE.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_LE.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_LT.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_LT.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_NO_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_NO_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_ANY_THROW.true", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("ASSERT_ANY_THROW.false", 0) != 0))
-        return EXIT_FAILURE;
+    ASSERT(mingtest::run("ASSERT_TRUE.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_TRUE.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_FALSE.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_FALSE.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_EQ.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_EQ.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_NE.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_NE.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_GE.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_GE.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_GT.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_GT.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_LE.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_LE.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_LT.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_LT.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_THROW.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_NO_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_NO_THROW.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_ANY_THROW.true", 0) == 0);
+    ASSERT(mingtest::run("ASSERT_ANY_THROW.false", 0) != 0);
 
-    if (!(mingtest::run("SKIP.skip", 0) == 0))
-        return EXIT_FAILURE;
-    if (!(mingtest::run("FAIL.fail", 0) != 0))
-        return EXIT_FAILURE;
+    ASSERT(mingtest::run("SKIP.skip", 0) == 0);
+    ASSERT(mingtest::run("FAIL.fail", 0) != 0);
 
-    if (!(mingtest::run("TestReport.*", "xml:testreport.xml") != 0))
-        return EXIT_FAILURE;
+    ASSERT(mingtest::run("TestReport.*", "xml:testreport.xml") != 0);
     {
         {
             std::ifstream testReportFile("testreport.xml");
@@ -412,8 +367,7 @@ int main()
 "</testcase>"
 "</testsuite>"
 "</testsuites>";
-            if (testReport != checkStr)
-                return EXIT_FAILURE;
+            ASSERT(testReport == checkStr);
         }
         std::remove("testreport.xml");
     }
