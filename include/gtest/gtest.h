@@ -2,9 +2,7 @@
 #pragma once
 
 #define TEST(suite, name) \
-    void test_##suite##_##name(); \
-    struct Test_##suite##_##name { Test_##suite##_##name() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name, __FILE__, __LINE__}; mingtest::add(test);} } _test_##suite##_##name; \
-    void test_##suite##_##name()
+    MINGTEST_TEST(suite, name)
 
 #define EXPECT_TRUE(e) \
     MINGTEST_ASSERT(e, "EXPECT_TRUE(" #e ") failed")
@@ -97,6 +95,11 @@ void skip();
 bool debugger();
 
 }
+
+#define MINGTEST_TEST(suite, name) \
+    void test_##suite##_##name(); \
+    struct Test_##suite##_##name { Test_##suite##_##name() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name, __FILE__, __LINE__}; mingtest::add(test);} } _test_##suite##_##name; \
+    void test_##suite##_##name()
 
 #define _MINGTEST_FAIL(message) \
     mingtest::fail(__FILE__, __LINE__, message)
