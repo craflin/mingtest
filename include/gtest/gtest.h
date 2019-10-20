@@ -101,8 +101,19 @@ bool debugger();
     struct Test_##suite##_##name { Test_##suite##_##name() {static mingtest::Test test = {#suite, #name, &test_##suite## _##name, __FILE__, __LINE__}; mingtest::add(test);} } _test_##suite##_##name; \
     void test_##suite##_##name()
 
+#ifdef _MSC_VER
+void __cdecl __debugbreak(void);
+#define _MINGTEST_TRAP() __debugbreak()
+#else
+#if defined(__GNUC__) && defined(_ARM)
+__attribute__((gnu_inline, always_inline)) static void __inline__ _MINGTEST_TRAP(void) {__asm__ volatile("BKPT");}
+#else
+#define _MINGTEST_TRAP() __builtin_trap()
+#endif
+#endif
+
 #define _MINGTEST_FAIL(message) \
-    mingtest::fail(__FILE__, __LINE__, message)
+    do { mingtest::fail(__FILE__, __LINE__, message); if (mingtest::debugger()) _MINGTEST_TRAP(); } while(false)
 
 #define MINGTEST_FAIL(message) \
     do { _MINGTEST_FAIL(message); mingtest::exit(); } while(false)
