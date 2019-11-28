@@ -281,6 +281,39 @@ int run(const char* filter, const char* outputFile_)
         }
     }
 
+    // generate preliminary test report where everything is failed
+    char testDate[64];
+    if(!outputFile.empty())
+    {
+        time_t now = time(0);
+        struct tm* time = localtime(&now);
+        strftime(testDate, sizeof(testDate), "%Y-%m-%dT%H:%M:%S", time);
+        mkdir(dirname(outputFile));
+        std::ofstream file;
+        file.open(outputFile.c_str());
+        file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+        file << "<testsuites name=\"AllTests\" tests=\"" << activeTests << "\" failures=\"" << activeTests << "\" errors=\"0\" skipped=\"0\" timestamp=\"" << testDate << "\" time=\"0\">" << std::endl;
+        for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
+        {
+            const std::string& suiteName = i->first;
+            Suite& suite = i->second;
+            file << "<testsuite name=\"" << xmlEscape(suiteName) << "\" tests=\"" << suite.tests.size() << "\" failures=\"" << suite.tests.size() << "\" errors=\"0\" skipped=\"0\" time=\"0\">" << std::endl;
+            for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
+            {
+                TestData& testData = *i;
+                file << "<testcase name=\"" << xmlEscape(testData.test->name) << "\" time=\"0\" classname=\"" << xmlEscape(suiteName) << "\"/>" << std::endl;
+            }
+            file << "</testsuite>" << std::endl;
+        }
+        file << "</testsuites>" << std::endl;
+        file.close();
+        if (file.fail())
+        {
+            fprintf(stderr, "Could not create test report '%s'\n", outputFile.c_str());
+            return EXIT_FAILURE;
+        }
+    }
+
     // run tests
     std::cout << "[==========] Running " << activeTests << " " << testUnit(activeTests) << " from " << activeSuites.size() << " " << testCaseUnit(activeSuites.size()) << "." << std::endl;
     std::cout << "[----------] Global test environment set-up." << std::endl;
@@ -378,18 +411,13 @@ int run(const char* filter, const char* outputFile_)
         std::cout << std::endl << failedTests.size() << " FAILED " << testUnitUpper(failedTests.size()) << std::endl;
     }
 
-    // generate test report
+    // generate real test report
     if(!outputFile.empty())
     {
-        mkdir(dirname(outputFile));
         std::ofstream file;
         file.open(outputFile.c_str());
         file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
-        char date[64];
-        time_t now = time(0);
-        struct tm* time = localtime(&now);
-        strftime(date, sizeof(date), "%Y-%m-%dT%H:%M:%S", time);
-        file << "<testsuites name=\"AllTests\" tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << date << "\" time=\"" << (duration / 1000.0) << "\">" << std::endl;
+        file << "<testsuites name=\"AllTests\" tests=\"" << activeTests << "\" failures=\"" << failedTests.size() << "\" errors=\"0\" skipped=\"" << skippedTests.size() << "\" timestamp=\"" << testDate << "\" time=\"" << (duration / 1000.0) << "\">" << std::endl;
         for (std::map<std::string, Suite>::iterator i = activeSuites.begin(), end = activeSuites.end(); i != end; ++i)
         {
             const std::string& suiteName = i->first;
