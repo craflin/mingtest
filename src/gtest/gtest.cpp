@@ -234,7 +234,7 @@ int run(const char* filter, const char* outputFile_)
 {
     // enable memory checks
 #ifdef _WIN32
-    #ifdef _DEBUG
+    #if defined(_MSC_VER) && defined(_DEBUG)
     _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -368,10 +368,10 @@ int run(const char* filter, const char* outputFile_)
                 }
             }
 #ifdef _WIN32
-#ifdef _DEBUG
+    #if defined(_MSC_VER) && defined(_DEBUG)
             if (!_CrtCheckMemory())
                 fail(testData.test->file, testData.test->line, "detected memory corruption");
-#endif
+    #endif
 #else
             mcheck_check_all();
 #endif
