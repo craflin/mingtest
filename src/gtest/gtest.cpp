@@ -301,7 +301,9 @@ int run(const char* filter, const char* outputFile_)
             for (std::list<TestData>::iterator i = suite.tests.begin(), end = suite.tests.end(); i != end; ++i)
             {
                 TestData& testData = *i;
-                file << "<testcase name=\"" << xmlEscape(testData.test->name) << "\" time=\"0\" classname=\"" << xmlEscape(suiteName) << "\"/>" << std::endl;
+                file << "<testcase name=\"" << xmlEscape(testData.test->name) << "\" time=\"0\" classname=\"" << xmlEscape(suiteName) << "\">" << std::endl;
+                file << "<failure message=\"crash or timeout\" type=\"\"/>" << std::endl;
+                file << "</testcase>" << std::endl;
             }
             file << "</testsuite>" << std::endl;
         }
