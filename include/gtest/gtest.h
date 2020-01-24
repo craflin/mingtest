@@ -126,8 +126,8 @@ __attribute__((gnu_inline, always_inline)) static void __inline__ _MINGTEST_TRAP
 
 #define MINGTEST_ASSERT_THROW(e, exception, message) \
     do { \
-        if (mingtest::debugger()) { try { e; _MINGTEST_FAIL(message); } catch(exception) { } } \
-        else { try { e; _MINGTEST_FAIL(message); } catch(exception) { } catch(...) { _MINGTEST_FAIL(message);} } \
+        if (mingtest::debugger()) { try { e; _MINGTEST_FAIL(message); } catch(const exception&) { } } \
+        else { try { e; _MINGTEST_FAIL(message); } catch(const exception&) { } catch(...) { _MINGTEST_FAIL(message);} } \
     } while (false)
 
 #define MINGTEST_ASSERT_NO_THROW(e, message) \
