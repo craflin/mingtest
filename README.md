@@ -1,7 +1,7 @@
 
 # Ming Test
 
-Ming Test is a minimalistic C++ unit test framework and a "drop in" replacement for the gtest (and gtest_main) library.
+Ming Test is a minimalistic C++ unit test framework and a "drop in" replacement for the gtest (and the gtest_main) library. Contrarily to google test, it compiles quickly, does some basic memory consistency checking, does not depend on modern C++, does not conflict with other libraries, does not cause warnings when evaluating simple expressions and does not interfere with debugging.
 
 Features:
 * Very small include header that does not include system or standard library headers
@@ -9,8 +9,8 @@ Features:
 * No dependency on C++11
 * JUnit test report generation
 * Memory checking based on `_CrtSetDbgFlag`/`mcheck`
-* Does not catch unexpected exceptions when launched in a debugger
-* Breaks at failed assertions when running in a debugger
+* No catching of unexpected exceptions when launched in a debugger
+* Breaking at failed assertions when running in a debugger
 
 ## Example
 
@@ -29,7 +29,7 @@ TEST(Example, TestName1)
 TEST(Example, TestName2)
 {
     int a = 32;
-    int b = 32;
+    int b = 33;
     EXPECT_FALSE(a != b);
 }
 ```
