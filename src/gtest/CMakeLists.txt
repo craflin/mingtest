@@ -9,7 +9,8 @@ add_library(gtest STATIC
 )
 
 target_include_directories(gtest PUBLIC
-    ../../include
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>"
+    "$<INSTALL_INTERFACE:include>"
 )
 
 if(MSVC)
@@ -17,6 +18,9 @@ if(MSVC)
         _CRT_SECURE_NO_WARNINGS
     )
 endif()
+
+install(TARGETS gtest DESTINATION lib EXPORT ${PROJECT_NAME}Config)
+install(DIRECTORY ../../include DESTINATION .)
 
 source_group("" FILES ${sources})
 

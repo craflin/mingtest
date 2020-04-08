@@ -19,12 +19,14 @@ target_compile_definitions(gtest_main PRIVATE
 
 if(WIN32)
     target_include_directories(gtest_main PRIVATE
-        .
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
     )
 endif()
 
 target_link_libraries(gtest_main PRIVATE
     gtest
 )
+
+install(TARGETS gtest_main DESTINATION lib EXPORT ${PROJECT_NAME}Config)
 
 source_group("" FILES ${sources})
