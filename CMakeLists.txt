@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 cmake_policy(SET CMP0048 NEW)
 
-project(mingtest VERSION 0.1.5)
+project(mingtest VERSION 0.1.6)
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX d)
