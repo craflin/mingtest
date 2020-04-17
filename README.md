@@ -30,8 +30,8 @@ TEST(Example, TestName2)
 {
     int a = 32;
     int b = 33;
-    EXPECT_FALSE(a != b);
+    EXPECT_FALSE(a == b);
 }
 ```
 
-... and build it as an executable. Link it against `gtest` and `gtest_main`. Then launch the executable to run the test. You can also use the assertion macros `EXPECT_THROW` and `EXPECT_ANY_THROW`. (And some pointless macros like `EXPECT_EQ`, `EXPECT_NE`, `EXPECT_GE`, `EXPECT_GT`, `EXPECT_LE`, `EXPECT_LT` and `EXPECT_NO_THROW` if you like.)
+... and build it as an executable. Link it against `gtest` and `gtest_main`. Then launch the executable to run the test. You can also use the assertion macros `EXPECT_THROW` and `EXPECT_ANY_THROW`. (And some rather pointless macros like `EXPECT_EQ`, `EXPECT_NE`, `EXPECT_GE`, `EXPECT_GT`, `EXPECT_LE`, `EXPECT_LT` and `EXPECT_NO_THROW` if you like.)
