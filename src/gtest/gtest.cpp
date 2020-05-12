@@ -8,7 +8,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include <mcheck.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
@@ -239,8 +238,6 @@ int run(const char* filter, const char* outputFile_)
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_LEAK_CHECK_DF);
     #endif
-#else
-    mcheck(NULL);
 #endif
 
     // check if there is a debugger attached
@@ -374,8 +371,6 @@ int run(const char* filter, const char* outputFile_)
             if (!_CrtCheckMemory())
                 fail(testData.test->file, testData.test->line, "detected memory corruption");
     #endif
-#else
-            mcheck_check_all();
 #endif
             _currentTestData = 0;
             testData.duration = time() - start;

@@ -8,7 +8,7 @@ Features:
 * Easily integratable in CMake projects
 * No dependency on C++11
 * JUnit test report generation
-* Memory checking based on `_CrtSetDbgFlag`/`mcheck`
+* Memory checking on Windows based on `_CrtSetDbgFlag`
 * No catching of unexpected exceptions when launched in a debugger
 * Breaking at failed assertions when running in a debugger
 
