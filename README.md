@@ -1,6 +1,8 @@
 
 # Ming Test
 
+[![Build Status](http://xaws6t1emwa2m5pr.myfritz.net:8080/buildStatus/icon?job=craflin%2Fmingtest%2Fmaster)](http://xaws6t1emwa2m5pr.myfritz.net:8080/job/craflin/job/mingtest/job/master/)
+
 Ming Test is a minimalistic C++ unit test framework and a "drop in" replacement for the gtest (and the gtest_main) library. Contrarily to google test, it compiles quickly, does some basic memory consistency checking, does not depend on modern C++, does not conflict with other libraries, does not cause warnings when evaluating simple expressions and does not interfere with debugging.
 
 Features:
