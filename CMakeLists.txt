@@ -10,4 +10,6 @@ enable_testing()
 
 add_subdirectory(src)
 
+install(FILES LICENSE DESTINATION .)
+
 install_deploy_export()
