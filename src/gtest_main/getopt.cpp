@@ -100,7 +100,7 @@ int getopt_missing_arg( const CHAR *optstring )
  * `opterr' is non-zero.
  */
 #define	complain( MSG, ARG )  if( opterr ) \
-  fprintf( stderr, "%s: "MSG"\n", PROGNAME, ARG )
+  fprintf( stderr, "%s: " MSG "\n", PROGNAME, ARG )
 
 static __inline__
 int getopt_argerror( int mode, const char *fmt, CHAR *prog, struct option *opt, int retval )
