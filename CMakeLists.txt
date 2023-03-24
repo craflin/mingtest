@@ -3,6 +3,10 @@ cmake_policy(SET CMP0048 NEW)
 
 project(mingtest VERSION 0.1.9)
 
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_DEBUG "/MDd /Ob0 /Od /RTC1" CACHE STRING "" FORCE) # remove /Zi
+endif()
+
 include(CDeploy)
 include(CPack)
 
