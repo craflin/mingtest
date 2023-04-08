@@ -15,7 +15,7 @@ pipeline {
                 stages {
                     stage('Build') {
                         steps {
-                            cmakeBuild buildDir: 'build', installation: 'InSearchPath', buildType: 'Release', cmakeArgs: '-G Ninja -DCDEPLOY_DEBUG_BUILD=ON'
+                            cmakeBuild buildDir: 'build', cleanBuild: true, installation: 'InSearchPath', buildType: 'Release', cmakeArgs: '-G Ninja -DCDEPLOY_DEBUG_BUILD=ON'
                             cmake workingDir: 'build', arguments: '--build . --target package', installation: 'InSearchPath'
                             dir('build') {
                                 archiveArtifacts artifacts: 'mingtest-*.zip'
