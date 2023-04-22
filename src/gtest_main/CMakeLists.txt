@@ -27,6 +27,12 @@ endif()
 target_link_libraries(gtest_main PRIVATE
     gtest
 )
+if(MSVC)
+    target_compile_options(gtest_main PRIVATE
+        /Zl
+    )
+endif()
+
 
 install(TARGETS gtest_main DESTINATION lib EXPORT ${PROJECT_NAME}Config)
 
