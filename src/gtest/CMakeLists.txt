@@ -7,6 +7,7 @@ set(sources
 add_library(gtest STATIC
     ${sources}
 )
+add_library(mingtest::gtest ALIAS gtest)
 
 target_include_directories(gtest PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../../include>"

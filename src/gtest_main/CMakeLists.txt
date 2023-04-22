@@ -12,6 +12,7 @@ endif()
 add_library(gtest_main STATIC
     ${sources}
 )
+add_library(mingtest::gtest_main ALIAS gtest_main)
 
 target_compile_definitions(gtest_main PRIVATE
     PROJECT_VERSION="${PROJECT_VERSION}"
