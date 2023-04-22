@@ -17,6 +17,9 @@ if(MSVC)
     target_compile_definitions(gtest PRIVATE
         _CRT_SECURE_NO_WARNINGS
     )
+    target_compile_options(gtest PRIVATE
+        /Zl
+    )
 endif()
 
 install(TARGETS gtest DESTINATION lib EXPORT ${PROJECT_NAME}Config)
