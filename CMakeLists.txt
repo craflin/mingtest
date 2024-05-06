@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(mingtest VERSION 0.1.9)
+project(mingtest VERSION 0.2.0)
 
 if(MSVC)
-    set(CMAKE_CXX_FLAGS_DEBUG "/MDd /Ob0 /Od /RTC1" CACHE STRING "" FORCE) # remove /Zi
+    string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
 endif()
 
 include(CDeploy)
