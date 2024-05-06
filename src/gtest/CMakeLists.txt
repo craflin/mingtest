@@ -14,6 +14,12 @@ target_include_directories(gtest PUBLIC
     "$<INSTALL_INTERFACE:include>"
 )
 
+if(NOT WIN32)
+    target_link_libraries(gtest PUBLIC
+        rt
+    )
+endif()
+
 if(MSVC)
     target_compile_definitions(gtest PRIVATE
         _CRT_SECURE_NO_WARNINGS
