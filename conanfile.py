@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain
+from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
 from conan.tools.env import VirtualBuildEnv
 from conan.tools.files import load
 import re, os
@@ -35,6 +35,9 @@ class mingtestConan(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install()
+
+    def layout(self):
+        cmake_layout(self)
 
     def package_info(self):
         self.cpp_info.set_property("cmake_find_mode", "none")
