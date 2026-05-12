@@ -18,13 +18,12 @@ class mingtestConan(ConanFile):
         self.version = re.search("project\\([^ ]* VERSION ([0-9.]*)", content).group(1)
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.30.1")
-        self.tool_requires("ninja/1.12.1")
+        self.tool_requires("cmake/[>=3.27]")
 
     def generate(self):
         ms = VirtualBuildEnv(self)
         ms.generate()
-        tc = CMakeToolchain(self, generator='Ninja')
+        tc = CMakeToolchain(self)
         tc.generate()
 
     def build(self):
@@ -40,5 +39,13 @@ class mingtestConan(ConanFile):
         cmake_layout(self)
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_find_mode", "none")
-        self.cpp_info.builddirs.append(os.path.join("lib", "cmake", "mingtest"))
+        self.cpp_info.set_property("cmake_find_mode", "config")
+        self.cpp_info.components["gtest"].set_property("cmake_target_name", "mingtest::gtest")
+        self.cpp_info.components["gtest_main"].set_property("cmake_target_name", "mingtest::gtest_main")
+        self.cpp_info.components["gtest_main"].requires = ["gtest"]
+        if self.settings.get_safe("os") == "Windows" and self.settings.get_safe("build_type") == "Debug" and (self.settings.get_safe("compiler") == "Visual Studio" or self.settings.get_safe("compiler") == "msvc"):
+            self.cpp_info.components["gtest"].libs = [ "gtestd" ]
+            self.cpp_info.components["gtest_main"].libs = [ "gtest_maind" ]
+        else:
+            self.cpp_info.components["gtest"].libs = [ "gtest" ]
+            self.cpp_info.components["gtest_main"].libs = [ "gtest_main" ]
