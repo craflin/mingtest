@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(mingtest VERSION 0.2.2)
+project(mingtest VERSION 0.2.3)
 
 if(MSVC)
     string(REPLACE "/Zi" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")

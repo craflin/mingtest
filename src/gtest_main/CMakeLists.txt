@@ -33,6 +33,7 @@ if(MSVC)
     )
 endif()
 
+set_property(TARGET gtest_main PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 install(TARGETS gtest_main DESTINATION lib EXPORT ${PROJECT_NAME}Config)
 
