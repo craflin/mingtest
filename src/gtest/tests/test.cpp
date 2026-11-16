@@ -5,6 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <array>
 
 TEST(EXPECT_TRUE, true)
 {
@@ -152,6 +153,12 @@ TEST(ASSERT_EQ, true)
 TEST(ASSERT_EQ, false)
 {
     ASSERT_EQ(42, 0);
+}
+
+TEST(ASSERT_EQ, array) {
+  std::array<int, 5> arr{1, 1, 2, 3, 5};
+  ASSERT_GE(arr.size(), 10);
+  EXPECT_EQ(arr[9], 55);
 }
 
 TEST(ASSERT_NE, true)
@@ -307,6 +314,7 @@ int main()
     ASSERT(mingtest::run("ASSERT_FALSE.false", 0) != 0);
     ASSERT(mingtest::run("ASSERT_EQ.true", 0) == 0);
     ASSERT(mingtest::run("ASSERT_EQ.false", 0) != 0);
+    ASSERT(mingtest::run("ASSERT_EQ.array", 0) != 0);
     ASSERT(mingtest::run("ASSERT_NE.true", 0) == 0);
     ASSERT(mingtest::run("ASSERT_NE.false", 0) != 0);
     ASSERT(mingtest::run("ASSERT_GE.true", 0) == 0);
