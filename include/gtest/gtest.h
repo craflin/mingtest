@@ -1,4 +1,6 @@
 
+#include <exception>
+
 #pragma once
 
 #define TEST(suite, name) \
@@ -38,37 +40,37 @@
     MINGTEST_ASSERT_ANY_THROW(e, "EXPECT_ANY_THROW(" #e ") failed")
 
 #define ASSERT_TRUE(e) \
-    MINGTEST_ASSERT(e, "ASSERT_TRUE(" #e ") failed")
+    MINGTEST_ASSERT_STOP(e, "ASSERT_TRUE(" #e ") failed")
 
 #define ASSERT_FALSE(e) \
-    MINGTEST_ASSERT(!(e), "ASSERT_FALSE(" #e ") failed")
+    MINGTEST_ASSERT_STOP(!(e), "ASSERT_FALSE(" #e ") failed")
 
 #define ASSERT_EQ(lh, rh) \
-    MINGTEST_ASSERT((lh) == (rh), "ASSERT_EQ(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) == (rh), "ASSERT_EQ(" #lh ", " #rh ") failed")
 
 #define ASSERT_NE(lh, rh) \
-    MINGTEST_ASSERT((lh) != (rh), "ASSERT_NE(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) != (rh), "ASSERT_NE(" #lh ", " #rh ") failed")
 
 #define ASSERT_GE(lh, rh) \
-    MINGTEST_ASSERT((lh) >= (rh), "ASSERT_GE(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) >= (rh), "ASSERT_GE(" #lh ", " #rh ") failed")
 
 #define ASSERT_GT(lh, rh) \
-    MINGTEST_ASSERT((lh) > (rh), "ASSERT_GT(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) > (rh), "ASSERT_GT(" #lh ", " #rh ") failed")
 
 #define ASSERT_LE(lh, rh) \
-    MINGTEST_ASSERT((lh) <= (rh), "ASSERT_LE(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) <= (rh), "ASSERT_LE(" #lh ", " #rh ") failed")
 
 #define ASSERT_LT(lh, rh) \
-    MINGTEST_ASSERT((lh) < (rh), "ASSERT_LT(" #lh ", " #rh ") failed")
+    MINGTEST_ASSERT_STOP((lh) < (rh), "ASSERT_LT(" #lh ", " #rh ") failed")
 
 #define ASSERT_THROW(e, exception) \
-    MINGTEST_ASSERT_THROW(e, exception, "ASSERT_THROW(" #e ", " #exception ") failed")
+    MINGTEST_ASSERT_THROW_STOP(e, exception, "ASSERT_THROW(" #e ", " #exception ") failed")
 
 #define ASSERT_NO_THROW(e) \
-    MINGTEST_ASSERT_NO_THROW(e, "ASSERT_NO_THROW(" #e ") failed")
+    MINGTEST_ASSERT_NO_THROW_STOP(e, "ASSERT_NO_THROW(" #e ") failed")
 
 #define ASSERT_ANY_THROW(e) \
-    MINGTEST_ASSERT_ANY_THROW(e, "ASSERT_ANY_THROW(" #e ") failed")
+    MINGTEST_ASSERT_ANY_THROW_STOP(e, "ASSERT_ANY_THROW(" #e ") failed")
 
 #define FAIL() \
     MINGTEST_FAIL("FAIL() reached")
@@ -87,6 +89,8 @@ struct Test
     int line;
     Test* next;
 };
+
+class assertion_failure : public std::exception {};
 
 void add(Test& test);
 void fail(const char* file, int line, const char* message);
@@ -124,10 +128,27 @@ __attribute__((gnu_inline, always_inline)) static void __inline__ _MINGTEST_TRAP
 #define MINGTEST_ASSERT(e, message) \
     do { if(!(e)) _MINGTEST_FAIL(message); } while (false)
 
+#define MINGTEST_ASSERT_STOP(e, message) \
+    do { if(!(e)) { _MINGTEST_FAIL(message); throw mingtest::assertion_failure(); } } while (false)
+
 #define MINGTEST_ASSERT_THROW(e, exception, message) \
     do { \
         if (mingtest::debugger()) { try { e; _MINGTEST_FAIL(message); } catch(const exception&) { } } \
         else { try { e; _MINGTEST_FAIL(message); } catch(const exception&) { } catch(...) { _MINGTEST_FAIL(message);} } \
+    } while (false)
+
+#define MINGTEST_ASSERT_THROW_STOP(e, exception, message) \
+    do { \
+        if (mingtest::debugger()) { \
+            try { e; _MINGTEST_FAIL(message); } catch(const exception&) { } \
+        } \
+        else { \
+            try { e; _MINGTEST_FAIL(message); throw mingtest::assertion_failure(); } \
+            catch(const mingtest::assertion_failure&) { throw; } \
+            catch(const exception&) { } \
+            catch(...) { _MINGTEST_FAIL(message); throw mingtest::assertion_failure(); \
+            } \
+        } \
     } while (false)
 
 #define MINGTEST_ASSERT_NO_THROW(e, message) \
@@ -136,5 +157,17 @@ __attribute__((gnu_inline, always_inline)) static void __inline__ _MINGTEST_TRAP
         else { try { e; } catch(...) { _MINGTEST_FAIL(message); } } \
     } while (false)
 
+#define MINGTEST_ASSERT_NO_THROW_STOP(e, message) \
+    do { \
+        if (mingtest::debugger()) { e; } \
+        else { try { e; } catch(...) { _MINGTEST_FAIL(message); throw mingtest::assertion_failure(); } } \
+    } while (false)
+
 #define MINGTEST_ASSERT_ANY_THROW(e, message) \
     do { try { e; _MINGTEST_FAIL(message); } catch(...) { } } while (false)
+
+#define MINGTEST_ASSERT_ANY_THROW_STOP(e, message) \
+    do { try { e; _MINGTEST_FAIL(message); throw mingtest::assertion_failure(); } \
+    catch(mingtest::assertion_failure&) { throw; } \
+    catch(...) { } \
+    } while (false)

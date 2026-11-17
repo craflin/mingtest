@@ -338,6 +338,10 @@ int run(const char* filter, const char* outputFile_)
                 {
                     testData.test->func();
                 }
+                catch (assertion_failure&)
+                {
+                    ;
+                }
                 catch (ExitException&)
                 {
                     ;
@@ -350,6 +354,10 @@ int run(const char* filter, const char* outputFile_)
                     try
                     {
                         testData.test->func();
+                    }
+                    catch (assertion_failure&)
+                    {
+                        ;
                     }
                     catch (ExitException&)
                     {
